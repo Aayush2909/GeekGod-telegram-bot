@@ -4,20 +4,24 @@ from collections import deque
 class BotSpider(scrapy.Spider):
     name = "bot"
     urls = []
-
+    
+    #constructor called when started crawling
     def __init__(self, category=None, *args, **kwargs):
         super(BotSpider, self).__init__(*args, **kwargs)
         self.urls.append('https://www.geeksforgeeks.org/%s'%category)
-
+    
+    
+    #request started
     def start_requests(self):
         
         for url in self.urls:
             yield scrapy.Request(url=url, callback=self.parse)
-
+    
+    #callback url while request started
     def parse(self, response):
 
         with open("article.txt", "w") as f:
-            para = response.css("div.entry-content *::text").getall()
+            para = response.css("div.entry-content *::text").getall()           #getting text contents
             q = deque()
             for p in para:
                 q.append(p)
