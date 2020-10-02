@@ -8,11 +8,15 @@ import dialogflow_v2 as dialogflow
 import subprocess
 from utils import video_links, compiler, topics_key
 
+
+#logger initialized
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = 'BOT_TOKEN'
+TOKEN = 'BOT_TOKEN' 		#Telegram bot token
 
+
+#flask app intitialized
 app = Flask(__name__)
 
 @app.route('/')
@@ -28,11 +32,13 @@ def webhook():
 
 
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "client.json"
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "client.json"		#google api client.json file
 
 df_session_client = dialogflow.SessionsClient()
-PROJECT_ID = "PROJECT_ID"
+PROJECT_ID = "PROJECT_ID"		#google project id 
 
+
+#getting query results from the user texts
 def detect_intent_from_text(text, session_id, lang='en'):
     session = df_session_client.session_path(PROJECT_ID, session_id)
     text_input = dialogflow.types.TextInput(text=text, language_code=lang)
@@ -42,7 +48,7 @@ def detect_intent_from_text(text, session_id, lang='en'):
 
 
 
-
+#start command for bot
 def _start(bot, update):
     logger.info("{} {} started chatting".format(update['message']['chat']['first_name'], update['message']['chat']['last_name']))
     user = update.message.from_user.first_name
@@ -52,25 +58,25 @@ def _start(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text=reply, parse_mode=ParseMode.HTML)
 
 
-
+#help command for bot
 def _help(bot,update):
     help_text = "I have come to save you. What help do you need?\n\n<b>Commands-</b>\n/start - Introduction\n/code - To see how can you compile and run code/script.\n/language - What languages available."
     bot.send_message(chat_id=update.message.chat_id, text=help_text, parse_mode=ParseMode.HTML)
 
 
-
+#language command for bot
 def _language(bot, update):
     reply = "<b>Programming Languages supported-</b>\nC++\nC\nPHP\nJava\nPython"
     bot.send_message(chat_id=update.message.chat_id, text=reply, parse_mode=ParseMode.HTML)
 
 
-
+#learn command for bot
 def _learn(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="Choose a data structure.",
     reply_markup=ReplyKeyboardMarkup(keyboard=topics_key, one_time_keyboard=True))
 
 
-
+#code command for bot
 def _code(bot, update):
     reply = """Welcome to the compiler, GeekGod here to help you with the codes you have.\n\n/language - To see what languages are supported.\n\nTo compile and check output of the code,
 write '!code<space>Language<space>' followed by your code to run.
@@ -85,7 +91,7 @@ For Example-
     bot.send_message(chat_id=update.message.chat_id, text=reply)
 
 
-
+#message handler for normal texts
 def text_reply(bot, update):
     ds = {
         'Arrays' : 'array-data-structure/',
@@ -147,12 +153,12 @@ def text_reply(bot, update):
             topic = data['topic']
 
             logger.info("Fetching data and articles on {}.".format(topic))
-            with open("scraper.bat", 'w') as fp:
+            with open("scraper.bat", 'w') as fp:				#For linux, create "scraper.sh", a script file to run
                 fp.write("cd botSpider\n")
                 fp.write("scrapy crawl bot -a category="+ds[topic]+'\n')
                 fp.write("cd ..\n")
 
-            subprocess.call([r'scraper.bat'])
+            subprocess.call([r'scraper.bat'])					#For linux, call for ['sh', 'scraper.sh'] instead of [r'scraper.bat']
 
             with open("botSpider/article.txt",'r') as f:
                 reply = f.read()
@@ -170,26 +176,29 @@ def text_reply(bot, update):
 
 
 
-
+#sticker replies by bot
 def echo_sticker(bot, update):
     bot.send_sticker(chat_id=update.message.chat_id, 
     sticker=update.message.sticker.file_id)
 
 
 
-
+#error handler callback url
 def _error(bot, update, error):
     logger.error("{} has caused error {}.".format(update['message']['text'], error))
 
 
-
+#bot created
 bot = Bot(TOKEN)
 try:
-    bot.set_webhook("https://radiant-mesa-36509.herokuapp.com/" + TOKEN)
+    bot.set_webhook("https://radiant-mesa-36509.herokuapp.com/" + TOKEN)		#callback heroku url for deployment
 except Exception as e:
     print(e)
 
-dp = Dispatcher(bot, Queue())
+dp = Dispatcher(bot, Queue())		#dispatcher initialization
+
+
+#message and command handlers
 dp.add_handler(CommandHandler('start', _start))
 dp.add_handler(CommandHandler('help', _help))
 dp.add_handler(CommandHandler('code', _code))
@@ -197,7 +206,7 @@ dp.add_handler(CommandHandler('language', _language))
 dp.add_handler(CommandHandler('learn', _learn))
 dp.add_handler(MessageHandler(Filters.text, text_reply))
 dp.add_handler(MessageHandler(Filters.sticker, echo_sticker))
-dp.add_error_handler(_error)
+dp.add_error_handler(_error)		#error handler
 
 if __name__ == '__main__':
-    app.run(port=8443)
+    app.run(port=8443)			#app running
