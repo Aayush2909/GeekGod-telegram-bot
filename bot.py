@@ -147,12 +147,12 @@ def text_reply(bot, update):
             topic = data['topic']
 
             logger.info("Fetching data and articles on {}.".format(topic))
-            with open("scraper.sh", 'w') as fp:
+            with open("scraper.bat", 'w') as fp:
                 fp.write("cd botSpider\n")
                 fp.write("scrapy crawl bot -a category="+ds[topic]+'\n')
                 fp.write("cd ..\n")
 
-            subprocess.call(['sh', './scraper.sh'])
+            subprocess.call([r'scraper.bat'])
 
             with open("botSpider/article.txt",'r') as f:
                 reply = f.read()
