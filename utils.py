@@ -2,12 +2,14 @@ from apiclient.discovery import build
 import requests
 import json
 
-CLIENT_ID = "CLIENT_ID"
-CLIENT_SECRET = "CLIENT_SECRET"
+CLIENT_ID = "CLIENT_ID"         #Compiler api client id
+CLIENT_SECRET = "CLIENT_SECRET"     #compiler api client secret
 
-API_KEY = "YT_API_KEY"
+API_KEY = "YT_API_KEY"          #YT Api key
 youtube = build('youtube','v3',developerKey=API_KEY)
 
+
+#getting video links 
 def video_links(query='Data Structures'):
     req = youtube.search().list(q=query, part='snippet', type='video', maxResults=3)
     res = req.execute()
@@ -20,6 +22,7 @@ def video_links(query='Data Structures'):
 
 
 
+#compiler results
 default = """#include<iostream>
             using namespace std;
             int main()
@@ -51,6 +54,8 @@ def compiler(code=default, input="", lang="cpp14"):
     items = json.loads(response.text)
     return items
 
+
+#Inline keyboard topics key
 topics_key = [
     ['Arrays', 'Linked list', 'Stack'],
     ['Queue', 'Binary Tree', 'Binary Search Tree'],
